@@ -9,16 +9,30 @@ class MyPlugin(Star):
 
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
-    
-    # 注册指令的装饰器。指令名为 helloworld。注册成功后，发送 `/helloworld` 就会触发这个指令，并回复 `你好, {user_name}!`
-    @filter.command("helloworld")
-    async def helloworld(self, event: AstrMessageEvent):
+        
+    async def send_to_hentai_assistant(self, url):
+        api_url = f"http://10.0.0.3:5001/api/download?url={url}"
+        async with self.context.http_client.get(api_url) as response:
+            if response.status == 200:
+                data = await response.json()
+                return data
+            else:
+                logger.error(f"Failed to fetch data from {api_url}, status code: {response.status}")
+                return None
+
+    @filter.command("url")
+    async def url(self, event: AstrMessageEvent):
         """这是一个 hello world 指令""" # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
         user_name = event.get_sender_name()
         message_str = event.message_str # 用户发的纯文本消息字符串
         message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
         logger.info(message_chain)
-        yield event.plain_result(f"Hello, {user_name}, 你发了 {message_str}!") # 发送一条纯文本消息
-
+        if "hentai.org" in message_str:
+            result = await self.send_to_hentai_assistant(url=message_str)
+            if result != None:
+                yield event.plain_result(result) # 调用异步方法发送请求到 hentai 助手
+            else:
+                yield event.plain_result("解析错误")
+        
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
