@@ -1,6 +1,7 @@
 from astrbot.api.event import filter, AstrMessageEvent, MessageEventResult
 from astrbot.api.star import Context, Star, register
 from astrbot.api import logger
+import re
 import aiohttp
 
 @register("helloworld", "YourName", "一个简单的 Hello World 插件", "1.0.0")
@@ -10,31 +11,27 @@ class MyPlugin(Star):
 
     async def initialize(self):
         """可选择实现异步的插件初始化方法，当实例化该插件类之后会自动调用该方法。"""
-        
+                
     async def send_to_hentai_assistant(self, url):
         api_url = f"http://10.0.0.3:5001/api/download?url={url}"
         async with aiohttp.ClientSession() as session:
             async with session.get(api_url) as response:
-                if response.status == 200:
+                if response.status == 202:
                     data = await response.json()
-                    return data
+                    return True, data
                 else:
                     logger.error(f"Failed to fetch data from {api_url}, status code: {response.status}")
-                    return None
+                    return False, response.status
 
-    @filter.command("url")
-    async def url(self, event: AstrMessageEvent):
-        """这是一个 url 指令""" # 这是 handler 的描述，将会被解析方便用户了解插件内容。建议填写。
-        user_name = event.get_sender_name()
-        message_str = event.message_str # 用户发的纯文本消息字符串
-        message_chain = event.get_messages() # 用户所发的消息的消息链 # from astrbot.api.message_components import *
-        logger.info(message_chain)
-        if "hentai.org" in message_str:
-            result = await self.send_to_hentai_assistant(url=message_str)
-            if result != None:
-                yield event.plain_result(result) # 调用异步方法发送请求到 hentai 助手
-            else:
-                yield event.plain_result("解析错误")
-        
+    @filter.event_message_type(filter.EventMessageType.PRIVATE_MESSAGE)
+    async def on_private_message(self, event: AstrMessageEvent):
+        message_str = event.message_str # 获取消息的纯文本内容
+        pattern = r"^https://e.hentai\.org/g/\d+/[a-zA-Z0-9]+/$"
+        if re.fullmatch(pattern, message_str):
+            result = await self.send_to_hentai_assistant(url=message_str.strip(" "))
+            if result[0] == True:
+                yield event.plain_result(f"收到了 {result[1]['message']} 这样的信息，看起来推送成功了呢。") # 调用异步方法发送请求到 hentai 助手
+            elif result[0] == False:
+                yield event.plain_result(f"返回了 {result[1]} 这样的错误代码，看起来推送失败了呢。")
     async def terminate(self):
         """可选择实现异步的插件销毁方法，当插件被卸载/停用时会调用。"""
