@@ -14,7 +14,7 @@ class MyPlugin(Star):
         logger.info(f"MafuyuCommands 初始化完毕")
         logger.info(f"Hentai Assistant API URL: {self.api_url}")
         
-    def parse_message_chain(chain):
+    def parse_message_chain(self, chain):
         # 用于存储提取的信息
         reply_image_url = None
         reply_text = None
