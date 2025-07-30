@@ -1,0 +1,7 @@
+{
+  "hentai_assistant_api_url": {
+    "description": "Hentai Assistant 服务地址",
+    "type": "string",
+    "default": "http://127.0.0.1:5001"
+  }
+  }
