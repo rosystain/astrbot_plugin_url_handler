@@ -4,5 +4,5 @@
 
 # 功能
 ## Hentai Assistant API
-监听群聊和私聊，对来自 E-Hentai 的画廊链接作出回应。
-- 群聊中，特权用户可以对指定消息回复 download 或者 dl 触发动作。
+1. 对来自 E-Hentai 的画廊链接作出回应。
+2. 群聊中，特权用户可以对指定消息回复 download 或者 dl 触发动作。
