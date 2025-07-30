@@ -73,7 +73,7 @@ class MyPlugin(Star):
         message_chain = event.message_obj.message # AstrBot 解析出来的消息链内容
         message_str = event.message_str # 获取消息的纯文本内容
         if message_str == "dl" or message_str == "download":
-            reply_image_url, reply_text, current_text = self.parse_message_chain(message_chain)
+            reply_image_url, reply_text, current_text = self.parse_message_chain(chain=message_chain)
             if reply_text:
                 message_str = reply_text
         pattern = r"https://e.hentai\.org/g/\d+/[a-zA-Z0-9]+/"
